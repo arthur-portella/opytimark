@@ -11,15 +11,19 @@ from opytimark.core import Benchmark
 
 
 class ZDT1(Benchmark):
-    """Forrester class implements the Forrester's benchmarking function.
+    """ZDT1 class implements the ZDT1 multi-objective benchmarking function.
 
-    .. math:: f(x) = (6x - 2)^2 sin(12x - 4)
+    .. math:: f_1(\mathbf{x}) = x_1
+
+    .. math:: g(\mathbf{x}) = 1 + \frac{9}{n-1}\sum_{i=2}^{n} x_i
+
+    .. math:: f_2(\mathbf{x}) = g(\mathbf{x})\left(1-\sqrt{\frac{f_1}{g(\mathbf{x})}}\right)
 
     Domain:
-        The function is commonly evaluated using :math:`x \in [0, 1]`.
+        The function is commonly evaluated using :math:`x_i \in [0, 1]`.
 
-    Global Minima:
-        :math:`f(x^*) \\approx -5.9932767166446155 \mid x^* \\approx (0.75)`.
+    Pareto-optimal front:
+        :math:`f_2 = 1 - \sqrt{f_1}`.
 
     """
 
@@ -28,7 +32,7 @@ class ZDT1(Benchmark):
         name: Optional[str] = "ZDT1",
         dims: Optional[int] = -1,
         continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
+        convex: Optional[bool] = True,
         differentiable: Optional[bool] = True,
         multimodal: Optional[bool] = False,
         separable: Optional[bool] = False,
@@ -51,14 +55,14 @@ class ZDT1(Benchmark):
         )
 
     @d.check_exact_dimension
-    def __call__(self, x: np.array) -> np.array:
+    def __call__(self, x: np.array) -> np.ndarray:
         """This method returns the function's output when the class is called.
 
         Args:
             x: An input array for calculating the function's output.
 
         Returns:
-            (float): The benchmarking function output `f(x)`.
+            (np.array): The benchmarking function outputs `[f1, f2]`.
 
         """
 
