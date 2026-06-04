@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 
+import opytimark.utils.exception as e
 import opytimark.utils.constants as c
 import opytimark.utils.decorator as d
 from opytimark.core import Benchmark
@@ -65,6 +66,9 @@ class ZDT1(Benchmark):
             (np.array): The benchmarking function outputs `[f1, f2]`.
 
         """
+
+        if (len(x) < 2):
+            raise e.ValueError("`n_variables` should be > 1")
 
         f1 = x[0]
 
@@ -131,6 +135,9 @@ class ZDT2(Benchmark):
 
         """
 
+        if (len(x) < 2):
+            raise e.ValueError("`n_variables` should be > 1")
+
         f1 = x[0]
 
         g = 1 + 9 * np.sum(x[1:]) / (len(x) - 1)
@@ -164,7 +171,7 @@ class ZDT3(Benchmark):
         convex: Optional[bool] = False,
         differentiable: Optional[bool] = True,
         multimodal: Optional[bool] = True,
-        separable: Optional[bool] = True,
+        separable: Optional[bool] = False,
     ):
         """Initialization method.
 
@@ -195,6 +202,9 @@ class ZDT3(Benchmark):
 
         """
 
+        if (len(x) < 2):
+            raise e.ValueError("`n_variables` should be > 1")
+
         f1 = x[0]
 
         g = 1 + 9 * np.sum(x[1:]) / (len(x) - 1)
@@ -210,7 +220,7 @@ class ZDT4(Benchmark):
 
     .. math:: g(\mathbf{x}) = 1 + 10(n-1) + \sum_{i=2}^{n} [x_i^2 - 10\cos(4\pi x_i)]
 
-    .. math:: f_2(\mathbf{x}) = g(\mathbf{x})\left\lfloor1-\sqrt{\frac{f_1}{g(\mathbf{x})}}\right\rfloor
+    .. math:: f_2(\mathbf{x}) = g(\mathbf{x})\left(1-\sqrt{\frac{f_1}{g(\mathbf{x})}}\right)
 
     Domain:
         x1 in [0, 1]; xi in [-5, 5] for i = 2, ..., n.
@@ -225,7 +235,7 @@ class ZDT4(Benchmark):
         name: Optional[str] = "ZDT4",
         dims: Optional[int] = -1,
         continuous: Optional[bool] = True,
-        convex: Optional[bool] = True,
+        convex: Optional[bool] = False,
         differentiable: Optional[bool] = True,
         multimodal: Optional[bool] = True,
         separable: Optional[bool] = False,
@@ -280,8 +290,9 @@ class ZDT6(Benchmark):
         The function is commonly evaluated using :math:`x_i \in [0, 1]`.
 
     Pareto-optimal front:
-        An optimal value occurs when f_1 \in [0.28, 1] and f_2 \in [0, 1].
-
+        :math:`f_2 = 1 - f_1^2`,
+        where :math:`f_1 \in [0.280775, 1]`.
+        
     """
 
     def __init__(
@@ -323,11 +334,13 @@ class ZDT6(Benchmark):
 
         """
 
+        if (len(x) < 2):
+            raise e.ValueError("`n_variables` should be > 1")
+
         f1 = 1 - np.exp(-4 * x[0]) * np.sin(6 * np.pi * x[0])**6
 
-        g = 1 + 9 * (np.sum(x[1:]) / (len(x) - 1))**1/4
+        g = 1 + 9 * (np.sum(x[1:]) / (len(x) - 1))**(1/4)
 
         f2 = g * (1 - np.square(f1 / g))
         
         return np.array([f1, f2])
-        
