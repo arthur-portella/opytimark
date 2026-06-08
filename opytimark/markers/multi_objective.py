@@ -344,3 +344,107 @@ class ZDT6(Benchmark):
         f2 = g * (1 - np.square(f1 / g))
         
         return np.array([f1, f2])
+    
+class DTLZ1(Benchmark):
+    """DTLZ1 class implements the DTLZ1 multi-objective benchmarking function.
+
+    .. math:: f_1(\mathbf{x}) = \frac{1}{2} x_1 x_2 \cdots x_{M-1} (1 + g(\mathbf{x}_M))
+
+    .. math:: f_i(\mathbf{x}) = \frac{1}{2} x_1 \cdots x_{M-i} (1 - x_{M-i+1}) (1 + g(\mathbf{x}_M)),
+        \quad i = 2, \ldots, M-1
+
+    .. math:: f_M(\mathbf{x}) = \frac{1}{2} (1 - x_1)(1 + g(\mathbf{x}_M))
+
+    .. math:: g(\mathbf{x}_M) = 100 \left[ k + \sum_{x_i \in \mathbf{x}_M} \left( (x_i - 0.5)^2 - \cos(20 \pi (x_i - 0.5)) \right) \right]
+
+    Domain:
+        The function is commonly evaluated using :math:`x_i \in [0, 1]`.
+
+    Pareto-optimal front:
+        :math:`\sum_{i=1}^{M} f_i = 0.5`,
+        achieved when :math:`g(\mathbf{x}_M) = 0`,
+        i.e., :math:`x_i = 0.5` for all :math:`x_i \in \mathbf{x}_M`.
+        
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = "DTLZ1",
+        dims: Optional[int] = -1,
+        continuous: Optional[bool] = True,
+        convex: Optional[bool] = True,
+        differentiable: Optional[bool] = True,
+        multimodal: Optional[bool] = True,
+        separable: Optional[bool] = False,
+        n_objectives: Optional[int] = 3
+    ):
+        """Initialization method.
+
+        Args:
+            name: Name of the function.
+            dims: Number of allowed dimensions.
+            continuous: Whether the function is continuous.
+            convex: Whether the function is convex.
+            differentiable: Whether the function is differentiable.
+            multimodal: Whether the function is multimodal.
+            separable: Whether the function is separable.
+            n_objectives: Number of objectives.
+        """
+
+        super(DTLZ1, self).__init__(
+            name, dims, continuous, convex, differentiable, multimodal, separable
+        )
+
+        self.n_objectives = n_objectives
+
+    @property
+    def n_objectives(self) -> int:
+        """Number of objectives."""
+
+        return self._n_objectives
+
+    @n_objectives.setter
+    def n_objectives(self, n_objectives: int) -> None:
+        if not isinstance(n_objectives, int):
+            raise e.TypeError("`n_objectives` should be an integer")
+        if n_objectives <= 1:
+            raise e.ValueError("`n_objectives` should be > 1")
+
+        self._n_objectives = n_objectives
+
+    @d.check_exact_dimension
+    def __call__(self, x: np.array) -> np.ndarray:
+        """This method returns the function's output when the class is called.
+
+        Args:
+            x: An input array for calculating the function's output.
+
+        Returns:
+            (np.array): The benchmarking function outputs `[f1, f2, ..., fm]`.
+
+        """
+
+        M = self.n_objectives
+        n = len(x)
+
+        f = np.zeros(M)
+
+        k = n - M + 1
+
+        xm = x[n - k:]
+
+        g = 100 * (k + np.sum((xm[:] - 0.5)**2 - np.cos(20 * np.pi * (xm[:] - 0.5))))
+
+        for i in range(M):
+
+            total = 0.5 * (1 + g)
+            
+            for j in range(M - 1 - i):
+                total *= x[j]
+
+            if i > 0:
+                total *= (1 - x[M - 1 - i])
+
+            f[i] = total
+        
+        return f
