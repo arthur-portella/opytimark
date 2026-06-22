@@ -1220,19 +1220,33 @@ class DTLZ9(MultiObjectiveBenchmark):
 
         f = np.zeros(M)
 
-        constraints = np.zeros(M - 1)
+        # constraints = np.zeros(M - 1)
 
-        for i in range(M):
-            f[i] = np.sum(x[np.floor(i * n / M).astype(int) : np.floor((i + 1) * n / M).astype(int)] ** 0.1)
+        # for i in range(M):
+        #     f[i] = np.sum(x[np.floor(i * n / M).astype(int) : np.floor((i + 1) * n / M).astype(int)] ** 0.1)
 
-        for i in range(M - 1):
-            constraints[i] = (f[-1] ** 2) + (f[i] ** 2) - 1
+        # for i in range(M - 1):
+        #     constraints[i] = (f[-1] ** 2) + (f[i] ** 2) - 1
 
-        violation = 0
+        # violation = 0
 
-        for i in range(M - 1):
-            violation += max(0, -constraints[i]) ** 2
+        # for i in range(M - 1):
+        #     violation += max(0, -constraints[i]) ** 2
         
+        # f += self.penalty * violation
+
+
+
+        # índices de corte para cada objetivo
+        idx = np.floor(np.arange(M + 1) * n / M).astype(int)
+
+        # f[i] = sum(x[idx[i]:idx[i+1]] ** 0.1)
+
+        f = np.add.reduceat(x ** 0.1, idx[:-1]) 
+
+        c = f[-1] ** 2 + f[:-1] ** 2 - 1
+        violation = np.sum(c ** 2)
+
         f += self.penalty * violation
 
         return f
