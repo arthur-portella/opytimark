@@ -208,3 +208,117 @@ class MultiObjectiveBenchmark(Benchmark):
 
         self._n_objectives = n_objectives
     
+
+class WFGBenchmark(MultiObjectiveBenchmark):
+    """A WFGBenchmark class for WFG multi-objective benchmarks
+
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = "WFGBenchmark",
+        continuous: Optional[bool] = False,
+        convex: Optional[bool] = False,
+        differentiable: Optional[bool] = False,
+        multimodal: Optional[bool] = False,
+        separable: Optional[bool] = False,
+        n_objectives: Optional[int] = 2,
+        k: Optional[int] = 4,
+        l: Optional[int] = 20,
+    ):
+        """Initialization method.
+
+        Args:
+            name: Name of the function.
+            continuous: Whether the function is continuous.
+            convex: Whether the function is convex.
+            differentiable: Whether the function is differentiable.
+            multimodal: Whether the function is multimodal.
+            separable: Whether the function is separable.
+            n_objectives: Number of objectives.
+            k: Number of position parameters.
+            l: Number of distance parameters
+
+        """
+
+        super(WFGBenchmark, self).__init__(
+            name=name,
+            dims=k + l,
+            continuous=continuous,
+            convex=convex,
+            differentiable=differentiable,
+            multimodal=multimodal,
+            separable=separable,
+            n_objectives=n_objectives,
+        )
+
+        self.k = k
+        self.l = l
+
+    @property
+    def k(self) -> int:
+        """Number of position parameters."""
+
+        return self._k
+
+    @k.setter
+    def k(self, k: int) -> None:
+        if not isinstance(k, int):
+            raise e.TypeError("`k` should be an integer")
+        if k <= 1:
+            raise e.ValueError("`k` should be > 1")
+
+        self._k = k
+
+    @property
+    def l(self) -> int:
+        """Number of distance parameters."""
+
+        return self._l
+
+    @l.setter
+    def l(self, l: int) -> None:
+        if not isinstance(l, int):
+            raise e.TypeError("`l` should be an integer")
+        if l <= 1:
+            raise e.ValueError("`l` should be > 1")
+
+        self._l = l
+
+    def normalize(self, z: np.array):
+        aux = np.arange(len(z))
+
+        return z / (2 * (aux + 1))
+    
+    def calculate_x(self, t, A):
+        M = len(t)
+
+        x = np.zeros(M)
+
+        for i in range(M - 1):
+            x[i] = np.maximum(t[M - 1], A[i]) * (t[i] - 0.5) + 0.5
+
+        x[M - 1] = t[M - 1]
+
+        return x
+    
+    def calculate_f(self, h, x_M):
+        M = len(h)
+
+        f = np.zeros(M)
+        
+        D = 1
+        S = [2 * (i + 1) for i in range(M)]
+
+        for i in range(M):
+            f[i] = D * x_M + S[i] * h[i]
+
+        return f
+    
+    @property
+    def lower_bound(self):
+        return np.zeros(self.k + self.l)
+    
+    @property
+    def upper_bound(self):
+        return 2 * np.arange(1, self.k + self.l + 1)

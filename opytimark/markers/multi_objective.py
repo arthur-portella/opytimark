@@ -8,7 +8,9 @@ import numpy as np
 import opytimark.utils.exception as e
 import opytimark.utils.constants as c
 import opytimark.utils.decorator as d
-from opytimark.core import Benchmark, MultiObjectiveBenchmark
+import opytimark.utils.transformations as t
+import opytimark.utils.shape_functions as s
+from opytimark.core import Benchmark, MultiObjectiveBenchmark, WFGBenchmark
 
 
 class ZDT1(Benchmark):
@@ -1220,33 +1222,483 @@ class DTLZ9(MultiObjectiveBenchmark):
 
         f = np.zeros(M)
 
-        # constraints = np.zeros(M - 1)
+        constraints = np.zeros(M - 1)
 
-        # for i in range(M):
-        #     f[i] = np.sum(x[np.floor(i * n / M).astype(int) : np.floor((i + 1) * n / M).astype(int)] ** 0.1)
+        for i in range(M):
+            f[i] = np.sum(x[np.floor(i * n / M).astype(int) : np.floor((i + 1) * n / M).astype(int)] ** 0.1)
 
-        # for i in range(M - 1):
-        #     constraints[i] = (f[-1] ** 2) + (f[i] ** 2) - 1
+        for i in range(M - 1):
+            constraints[i] = (f[-1] ** 2) + (f[i] ** 2) - 1
 
-        # violation = 0
+        violation = 0
 
-        # for i in range(M - 1):
-        #     violation += max(0, -constraints[i]) ** 2
+        for i in range(M - 1):
+            violation += max(0, -constraints[i]) ** 2
         
-        # f += self.penalty * violation
-
-
-
-        # índices de corte para cada objetivo
-        idx = np.floor(np.arange(M + 1) * n / M).astype(int)
-
-        # f[i] = sum(x[idx[i]:idx[i+1]] ** 0.1)
-
-        f = np.add.reduceat(x ** 0.1, idx[:-1]) 
-
-        c = f[-1] ** 2 + f[:-1] ** 2 - 1
-        violation = np.sum(c ** 2)
-
         f += self.penalty * violation
 
         return f
+    
+
+class WFG1(WFGBenchmark):
+    
+    """WFG1 class implements the WFG1 multi-objective benchmarking function.
+
+    The WFG1 problem is composed of a sequence of transformation functions
+    followed by shape functions. It is designed to generate a separable,
+    unimodal problem with a convex Pareto-optimal front.
+
+    Transformation sequence:
+
+    .. math::
+        t_1 = s_{linear}(y, 0.35)
+
+    .. math::
+        t_2 = b_{flat}(t_1, 0.8, 0.75, 0.85)
+
+    .. math::
+        t_3 = b_{poly}(t_2, 0.02)
+
+    .. math::
+        t_4 = r_{sum}(t_3)
+
+    Objective functions:
+
+    .. math::
+        f_i(\mathbf{x}) = D x_M + S_i h_i(\mathbf{x}), \quad i = 1,\ldots,M
+
+    where :math:`h_i` are the WFG1 shape functions
+    (convex for the first :math:`M-1` objectives and mixed for the last).
+
+    Domain:
+        :math:`0 \leq z_i \leq 2i,\quad i = 1,\ldots,n`.
+
+    Pareto-optimal front:
+        Convex, obtained when the distance-related parameters are zero after
+        the transformation sequence.
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = "WFG1",
+        continuous: Optional[bool] = True,
+        convex: Optional[bool] = True,
+        differentiable: Optional[bool] = False,
+        multimodal: Optional[bool] = False,
+        separable: Optional[bool] = True,
+        n_objectives: Optional[int] = 2,
+        k: Optional[int] = 4,
+        l: Optional[int] = 20,
+    ):
+        """Initialization method.
+
+        Args:
+            name: Name of the function.
+            continuous: Whether the function is continuous.
+            convex: Whether the function is convex.
+            differentiable: Whether the function is differentiable.
+            multimodal: Whether the function is multimodal.
+            separable: Whether the function is separable.
+            n_objectives: Number of objectives.
+            k: Number of position parameters.
+            l: Number of distance parameters.
+        """
+
+        super(WFG1, self).__init__(
+            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+        )
+
+    @d.check_exact_dimension
+    def __call__(self, z: np.array) -> np.ndarray:
+        """This method returns the function's output when the class is called.
+
+        Args:
+            z: An input array for calculating the function's output.
+
+        Returns:
+            (np.array): The benchmarking function outputs `[f1, f2, ..., fm]`.
+
+        """
+
+        M = self.n_objectives
+
+        n = self.l + self.k
+        if n != len(z):
+            raise e.SizeError("`len(z)` must be = `l` + `k`")
+
+        y = self.normalize(z)
+
+        t1 = np.copy(y)
+        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+
+        t2 = np.copy(t1)
+        t2[self.k:] = t.b_flat(t1[self.k:], 0.8, 0.75, 0.85)
+
+        t3 = np.copy(t2)
+        t3 = t.b_poly(t2, 0.02)
+
+        t4 = np.zeros(M)
+        for i in range(1, M):
+            start = (i - 1) * self.k // (M - 1)
+            end = i * self.k // (M - 1)
+        
+            w1 = 2 * (np.arange(start, end) + 1)
+            
+            t4[i - 1] = t.r_sum(t3[start:end], w1)
+
+        w2 = 2 * (np.arange(self.k, n) + 1)
+        t4[M - 1] = t.r_sum(t3[self.k:n], w2)
+
+        A = np.ones(M - 1)
+        x = self.calculate_x(t4, A)
+
+        h = np.zeros(M)
+        for i in range(1, M):
+            h[i - 1] = s.convex(x[:-1], i)
+
+        h[-1] = s.mixed(x[:-1], 1, 5)
+
+        return self.calculate_f(h, x[M - 1])
+    
+
+class WFG2(WFGBenchmark):
+    
+    """WFG2 class implements the WFG2 multi-objective benchmarking function.
+
+    The WFG2 problem is constructed using a sequence of transformation
+    functions followed by non-separable and multimodal shape functions.
+    It is designed to introduce disconnected Pareto fronts.
+
+    Transformation sequence:
+
+    .. math::
+        t_1 = s_{linear}(y, 0.35)
+
+    .. math::
+        t_2 = b_{flat}(t_1, 0.8, 0.75, 0.85)
+
+    .. math::
+        t_3 = r_{nonsep}(t_2)
+
+    Objective functions:
+
+    .. math::
+        f_i(\mathbf{x}) = D x_M + S_i h_i(\mathbf{x}), \quad i = 1,\ldots,M
+
+    where :math:`h_i` are the WFG2 shape functions, which introduce
+    disconnected regions in the Pareto front.
+
+    Domain:
+        :math:`0 \leq z_i \leq 2i,\quad i = 1,\ldots,n`.
+
+    Pareto-optimal front:
+        Disconnected and non-convex, obtained when distance-related
+        parameters are minimized after transformation.
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = "WFG2",
+        continuous: Optional[bool] = False,
+        convex: Optional[bool] = True,
+        differentiable: Optional[bool] = False,
+        multimodal: Optional[bool] = False,
+        separable: Optional[bool] = False,
+        n_objectives: Optional[int] = 2,
+        k: Optional[int] = 4,
+        l: Optional[int] = 20,
+    ):
+        """Initialization method.
+
+        Args:
+            name: Name of the function.
+            continuous: Whether the function is continuous.
+            convex: Whether the function is convex.
+            differentiable: Whether the function is differentiable.
+            multimodal: Whether the function is multimodal.
+            separable: Whether the function is separable.
+            n_objectives: Number of objectives.
+            k: Number of position parameters.
+            l: Number of distance parameters.
+        """
+
+        super(WFG2, self).__init__(
+            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+        )
+
+    @d.check_exact_dimension
+    def __call__(self, z: np.array) -> np.ndarray:
+        """This method returns the function's output when the class is called.
+
+        Args:
+            z: An input array for calculating the function's output.
+
+        Returns:
+            (np.array): The benchmarking function outputs `[f1, f2, ..., fm]`.
+
+        """
+
+        M = self.n_objectives
+
+        n = self.l + self.k
+        if n != len(z):
+            raise e.SizeError("`len(z)` must be = `l` + `k`")
+
+        y = self.normalize(z)
+
+        t1 = np.copy(y)
+        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+
+        t2 = np.copy(t1)
+        for i in range(1, M):
+            start = self.k + 2 * (i - self.k) - 2
+            end = self.k + 2 * (i - self.k)
+        t2[self.k:(n - 1) // 2] = t.r_nonsep(t2[start:end], 2)
+
+        t3 = np.zeros(M)
+        for i in range(1, M):
+            start = (i - 1) * self.k // (M - 1)
+            end = i * self.k // (M - 1)
+        
+            w1 = np.ones(end - start)
+            
+            t3[i - 1] = t.r_sum(t2[start:end], w1)
+
+        w2 = np.ones(((n - 1) // 2) - self.k)
+        t3[M - 1] = t.r_sum(t2[self.k:(n - 1) // 2], w2)
+
+        A = np.ones(M - 1)
+        x = self.calculate_x(t3, A)
+
+        h = np.zeros(M)
+        for i in range(1, M):
+            h[i - 1] = s.convex(x[:-1], i)
+
+        h[-1] = s.disc(x[:-1], 1, 1, 5)
+
+        return self.calculate_f(h, x[M - 1])
+    
+
+class WFG3(WFGBenchmark):
+    
+    """WFG3 class implements the WFG3 multi-objective benchmarking function.
+
+    The WFG3 problem is constructed using a sequence of transformation
+    functions followed by non-separable and multimodal shape functions.
+    It is designed to introduce disconnected Pareto fronts.
+
+    Transformation sequence:
+
+    .. math::
+        t_1 = s_{linear}(y, 0.35)
+
+    .. math::
+        t_2 = b_{flat}(t_1, 0.8, 0.75, 0.85)
+
+    .. math::
+        t_3 = r_{nonsep}(t_2)
+
+    Objective functions:
+
+    .. math::
+        f_i(\mathbf{x}) = D x_M + S_i h_i(\mathbf{x}), \quad i = 1,\ldots,M
+
+    where :math:`h_i` are the WFG2 shape functions, which introduce
+    disconnected regions in the Pareto front.
+
+    Domain:
+        :math:`0 \leq z_i \leq 2i,\quad i = 1,\ldots,n`.
+
+    Pareto-optimal front:
+        Disconnected and non-convex, obtained when distance-related
+        parameters are minimized after transformation.
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = "WFG3",
+        continuous: Optional[bool] = True,
+        convex: Optional[bool] = True,
+        differentiable: Optional[bool] = False,
+        multimodal: Optional[bool] = False,
+        separable: Optional[bool] = False,
+        n_objectives: Optional[int] = 2,
+        k: Optional[int] = 4,
+        l: Optional[int] = 20,
+    ):
+        """Initialization method.
+
+        Args:
+            name: Name of the function.
+            continuous: Whether the function is continuous.
+            convex: Whether the function is convex.
+            differentiable: Whether the function is differentiable.
+            multimodal: Whether the function is multimodal.
+            separable: Whether the function is separable.
+            n_objectives: Number of objectives.
+            k: Number of position parameters.
+            l: Number of distance parameters.
+        """
+
+        super(WFG3, self).__init__(
+            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+        )
+
+    @d.check_exact_dimension
+    def __call__(self, z: np.array) -> np.ndarray:
+        """This method returns the function's output when the class is called.
+
+        Args:
+            z: An input array for calculating the function's output.
+
+        Returns:
+            (np.array): The benchmarking function outputs `[f1, f2, ..., fm]`.
+
+        """
+
+        M = self.n_objectives
+
+        n = self.l + self.k
+        if n != len(z):
+            raise e.SizeError("`len(z)` must be = `l` + `k`")
+
+        y = self.normalize(z)
+
+        t1 = np.copy(y)
+        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+
+        t2 = np.copy(t1)
+        for i in range(1, M):
+            start = self.k + 2 * (i - self.k) - 2
+            end = self.k + 2 * (i - self.k)
+        t2[self.k:(n - 1) // 2] = t.r_nonsep(t2[start:end], 2)
+
+        t3 = np.zeros(M)
+        for i in range(1, M):
+            start = (i - 1) * self.k // (M - 1)
+            end = i * self.k // (M - 1)
+        
+            w1 = np.ones(end - start)
+            
+            t3[i - 1] = t.r_sum(t2[start:end], w1)
+
+        w2 = np.ones(((n - 1) // 2) - self.k)
+        t3[M - 1] = t.r_sum(t2[self.k:(n - 1) // 2], w2)
+
+        A = np.zeros(M - 1)
+        A[0] = 1
+        x = self.calculate_x(t3, A)
+
+        h = np.zeros(M)
+        for i in range(1, M + 1):
+            h[i - 1] = s.linear(x[:-1], i)
+
+        return self.calculate_f(h, x[M - 1])
+    
+
+class WFG4(WFGBenchmark):
+    
+    """WFG3 class implements the WFG3 multi-objective benchmarking function.
+
+    The WFG3 problem is constructed using a sequence of transformation
+    functions followed by non-separable and multimodal shape functions.
+    It is designed to introduce disconnected Pareto fronts.
+
+    Transformation sequence:
+
+    .. math::
+        t_1 = s_{linear}(y, 0.35)
+
+    .. math::
+        t_2 = b_{flat}(t_1, 0.8, 0.75, 0.85)
+
+    .. math::
+        t_3 = r_{nonsep}(t_2)
+
+    Objective functions:
+
+    .. math::
+        f_i(\mathbf{x}) = D x_M + S_i h_i(\mathbf{x}), \quad i = 1,\ldots,M
+
+    where :math:`h_i` are the WFG2 shape functions, which introduce
+    disconnected regions in the Pareto front.
+
+    Domain:
+        :math:`0 \leq z_i \leq 2i,\quad i = 1,\ldots,n`.
+
+    Pareto-optimal front:
+        Disconnected and non-convex, obtained when distance-related
+        parameters are minimized after transformation.
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = "WFG4",
+        continuous: Optional[bool] = True,
+        convex: Optional[bool] = False,
+        differentiable: Optional[bool] = True,
+        multimodal: Optional[bool] = True,
+        separable: Optional[bool] = True,
+        n_objectives: Optional[int] = 2,
+        k: Optional[int] = 4,
+        l: Optional[int] = 20,
+    ):
+        """Initialization method.
+
+        Args:
+            name: Name of the function.
+            continuous: Whether the function is continuous.
+            convex: Whether the function is convex.
+            differentiable: Whether the function is differentiable.
+            multimodal: Whether the function is multimodal.
+            separable: Whether the function is separable.
+            n_objectives: Number of objectives.
+            k: Number of position parameters.
+            l: Number of distance parameters.
+        """
+
+        super(WFG4, self).__init__(
+            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+        )
+
+    @d.check_exact_dimension
+    def __call__(self, z: np.array) -> np.ndarray:
+        """This method returns the function's output when the class is called.
+
+        Args:
+            z: An input array for calculating the function's output.
+
+        Returns:
+            (np.array): The benchmarking function outputs `[f1, f2, ..., fm]`.
+
+        """
+
+        M = self.n_objectives
+
+        n = self.l + self.k
+        if n != len(z):
+            raise e.SizeError("`len(z)` must be = `l` + `k`")
+
+        y = self.normalize(z)
+
+        t1 = t.s_multi(y, 30, 10, 0.35)
+
+        t2 = np.zeros(M)
+        for i in range(1, M):
+            start = (i - 1) * self.k // (M - 1)
+            end = i * self.k // (M - 1)
+        
+            w1 = np.ones(end - start)
+            t2[i - 1] = t.r_sum(t1[start:end], w1)
+
+        w2 = np.ones(n - self.k)
+        t2[M - 1] = t.r_sum(t1[self.k:n], w2)
+
+        A = np.ones(M - 1)
+        x = self.calculate_x(t2, A)
+
+        h = np.zeros(M)
+        for i in range(1, M + 1):
+            h[i - 1] = s.concave(x[:-1], i)
+
+        return self.calculate_f(h, x[M - 1])
