@@ -1202,6 +1202,39 @@ class WFG1(WFGBenchmark):
             name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
         )
 
+    def __init__(
+            self,
+            name: Optional[str] = "WFG1",
+            n_objectives: Optional[int] = 2,
+            k: Optional[int] = 4,
+            l: Optional[int] = 20,
+        ):
+            """Initialization method.
+    
+            Args:
+                name: Name of the function.
+                continuous: Whether the function is continuous.
+                convex: Whether the function is convex.
+                differentiable: Whether the function is differentiable.
+                multimodal: Whether the function is multimodal.
+                separable: Whether the function is separable.
+                n_objectives: Number of objectives.
+                k: Number of position parameters.
+                l: Number of distance parameters.
+            """
+    
+            super(WFG1, self).__init__(
+                name=name, 
+                continuous=True, 
+                convex=True, 
+                differentiable=False, 
+                multimodal=False, 
+                separable=True, 
+                n_objectives=n_objectives, 
+                k=k, 
+                l=l
+            )    
+
     @d.check_exact_dimension
     def __call__(self, z: np.array) -> np.ndarray:
         """This method returns the function's output when the class is called.
