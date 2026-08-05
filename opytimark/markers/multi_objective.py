@@ -1173,34 +1173,32 @@ class WFG1(WFGBenchmark):
     """
 
     def __init__(
-        self,
-        name: Optional[str] = "WFG1",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = True,
-        differentiable: Optional[bool] = False,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = True,
-        n_objectives: Optional[int] = 2,
-        k: Optional[int] = 4,
-        l: Optional[int] = 20,
-    ):
-        """Initialization method.
-
-        Args:
-            name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
-            n_objectives: Number of objectives.
-            k: Number of position parameters.
-            l: Number of distance parameters.
-        """
-
-        super(WFG1, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
-        )
+            self,
+            name: Optional[str] = "WFG1",
+            n_objectives: Optional[int] = 2,
+            k: Optional[int] = 4,
+            l: Optional[int] = 20,
+        ):
+            """Initialization method.
+    
+            Args:
+                name: Name of the function.
+                n_objectives: Number of objectives.
+                k: Number of position parameters.
+                l: Number of distance parameters.
+            """
+    
+            super(WFG1, self).__init__(
+                name=name,
+                continuous=True,
+                convex=True,
+                differentiable=False,
+                multimodal=False,
+                separable=True,
+                n_objectives=n_objectives,
+                k=k,
+                l=l,
+            )
 
     @d.check_exact_dimension
     def __call__(self, z: np.array) -> np.ndarray:
@@ -1293,11 +1291,6 @@ class WFG2(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG2",
-        continuous: Optional[bool] = False,
-        convex: Optional[bool] = True,
-        differentiable: Optional[bool] = False,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = False,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1306,18 +1299,21 @@ class WFG2(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG2, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name,
+            continuous=False,
+            convex=True,
+            differentiable=False,
+            multimodal=False,
+            separable=False,
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -1342,12 +1338,6 @@ class WFG2(WFGBenchmark):
 
         t1 = np.copy(y)
         t1[self.k:] = t.s_linear(y[self.k:], 0.35)
-
-        #t2 = np.copy(t1)
-        #for i in range(1, M):
-        #    start = self.k + 2 * (i - self.k) - 2
-        #    end = self.k + 2 * (i - self.k)
-        #t2[self.k:(n - 1) // 2] = t.r_nonsep(t2[start:end], 2)
 
         t2 = np.copy(t1)
         for i in range(self.k, self.k + self.l // 2):
@@ -1417,11 +1407,6 @@ class WFG3(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG3",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = True,
-        differentiable: Optional[bool] = False,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = False,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1430,18 +1415,21 @@ class WFG3(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG3, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name,
+            continuous=True,
+            convex=True,
+            differentiable=False,
+            multimodal=False,
+            separable=False, 
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -1532,11 +1520,6 @@ class WFG4(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG4",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
-        differentiable: Optional[bool] = True,
-        multimodal: Optional[bool] = True,
-        separable: Optional[bool] = True,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1545,18 +1528,21 @@ class WFG4(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG4, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name,
+            continuous=True,
+            convex=False,
+            differentiable=True,
+            multimodal=True,
+            separable=True, 
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -1637,11 +1623,6 @@ class WFG5(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG5",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
-        differentiable: Optional[bool] = False,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = True,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1650,18 +1631,21 @@ class WFG5(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG5, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name, 
+            continuous=True,
+            convex=False,
+            differentiable=False,
+            multimodal=False,
+            separable=True,
+            n_objectives=n_objectives, 
+            k=k, 
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -1742,11 +1726,6 @@ class WFG6(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG6",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
-        differentiable: Optional[bool] = True,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = False,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1755,18 +1734,21 @@ class WFG6(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG6, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name,
+            continuous=True,
+            convex=False,
+            differentiable=True,
+            multimodal=False,
+            separable=False, 
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -1848,11 +1830,6 @@ class WFG7(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG7",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
-        differentiable: Optional[bool] = True,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = True,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1861,18 +1838,21 @@ class WFG7(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG7, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name, 
+            continuous=True,
+            convex=False,
+            differentiable=True,
+            multimodal= False,
+            separable=True,
+            n_objectives=n_objectives, 
+            k=k, 
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -1961,11 +1941,6 @@ class WFG8(WFGBenchmark):
     def __init__(
         self,
         name: Optional[str] = "WFG8",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
-        differentiable: Optional[bool] = True,
-        multimodal: Optional[bool] = False,
-        separable: Optional[bool] = False,
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -1974,18 +1949,21 @@ class WFG8(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG8, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name,
+            continuous=True,
+            convex=False,
+            differentiable=True,
+            multimodal=True,
+            separable=True, 
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -2074,12 +2052,7 @@ class WFG9(WFGBenchmark):
 
     def __init__(
         self,
-        name: Optional[str] = "WFG9",
-        continuous: Optional[bool] = True,
-        convex: Optional[bool] = False,
-        differentiable: Optional[bool] = False,
-        multimodal: Optional[bool] = True,
-        separable: Optional[bool] = True,
+        name: Optional[str] = "WFG9",        
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -2088,18 +2061,21 @@ class WFG9(WFGBenchmark):
 
         Args:
             name: Name of the function.
-            continuous: Whether the function is continuous.
-            convex: Whether the function is convex.
-            differentiable: Whether the function is differentiable.
-            multimodal: Whether the function is multimodal.
-            separable: Whether the function is separable.
             n_objectives: Number of objectives.
             k: Number of position parameters.
             l: Number of distance parameters.
         """
 
         super(WFG9, self).__init__(
-            name, continuous, convex, differentiable, multimodal, separable, n_objectives, k, l
+            name=name, 
+            continuous=True,
+            convex=False,
+            differentiable=False,
+            multimodal=True,
+            separable=True, 
+            n_objectives=n_objectives, 
+            k=k, 
+            l=l
         )
 
     @d.check_exact_dimension
