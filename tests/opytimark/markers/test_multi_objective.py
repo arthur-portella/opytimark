@@ -220,6 +220,3 @@ def test_WFG9():
     y = f(x)
     
     np.testing.assert_allclose(y, np.array([2.27553429, 2.06986023]))
-
-
-test_WFG9()
