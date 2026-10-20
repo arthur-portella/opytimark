@@ -5,11 +5,11 @@ from typing import Optional
 
 import numpy as np
 
-import opytimark.utils.exception as e
 import opytimark.utils.constants as c
 import opytimark.utils.decorator as d
-import opytimark.utils.transformations as t
+import opytimark.utils.exception as e
 import opytimark.utils.shape_functions as s
+import opytimark.utils.transformations as t
 from opytimark.core import Benchmark, MultiObjectiveBenchmark, WFGBenchmark
 
 
@@ -69,17 +69,17 @@ class ZDT1(Benchmark):
 
         """
 
-        if (len(x) < 2):
+        if len(x) < 2:
             raise e.ValueError("`n_variables` should be > 1")
 
         f1 = x[0]
 
         g = 1 + 9 * np.sum(x[1:]) / (len(x) - 1)
 
-        f2 = g * (1 - np.sqrt(f1/g))
-        
+        f2 = g * (1 - np.sqrt(f1 / g))
+
         return np.array([f1, f2])
-        
+
 
 class ZDT2(Benchmark):
     """ZDT2 class implements the ZDT2 multi-objective benchmarking function.
@@ -137,16 +137,17 @@ class ZDT2(Benchmark):
 
         """
 
-        if (len(x) < 2):
+        if len(x) < 2:
             raise e.ValueError("`n_variables` should be > 1")
 
         f1 = x[0]
 
         g = 1 + 9 * np.sum(x[1:]) / (len(x) - 1)
 
-        f2 = g * (1 - np.square(f1/g))
-        
+        f2 = g * (1 - np.square(f1 / g))
+
         return np.array([f1, f2])
+
 
 class ZDT3(Benchmark):
     """ZDT3 class implements the ZDT3 multi-objective benchmarking function.
@@ -204,16 +205,17 @@ class ZDT3(Benchmark):
 
         """
 
-        if (len(x) < 2):
+        if len(x) < 2:
             raise e.ValueError("`n_variables` should be > 1")
 
         f1 = x[0]
 
         g = 1 + 9 * np.sum(x[1:]) / (len(x) - 1)
 
-        f2 = g * ((1 - np.sqrt(f1 / g))  - (f1 / g) * np.sin(10 * np.pi * f1)) 
-        
+        f2 = g * ((1 - np.sqrt(f1 / g)) - (f1 / g) * np.sin(10 * np.pi * f1))
+
         return np.array([f1, f2])
+
 
 class ZDT4(Benchmark):
     """ZDT4 class implements the ZDT4 multi-objective benchmarking function.
@@ -273,12 +275,13 @@ class ZDT4(Benchmark):
 
         f1 = x[0]
 
-        g = 1 + 10 * (len(x) - 1) + np.sum(x[1:]**2 - 10 * np.cos(4 * np.pi * x[1:]))
+        g = 1 + 10 * (len(x) - 1) + np.sum(x[1:] ** 2 - 10 * np.cos(4 * np.pi * x[1:]))
 
         f2 = g * (1 - np.sqrt(f1 / g))
-        
+
         return np.array([f1, f2])
-        
+
+
 class ZDT6(Benchmark):
     """ZDT6 class implements the ZDT6 multi-objective benchmarking function.
 
@@ -294,7 +297,7 @@ class ZDT6(Benchmark):
     Pareto-optimal front:
         :math:`f_2 = 1 - f_1^2`,
         where :math:`f_1 \in [0.280775, 1]`.
-        
+
     """
 
     def __init__(
@@ -336,17 +339,17 @@ class ZDT6(Benchmark):
 
         """
 
-        if (len(x) < 2):
+        if len(x) < 2:
             raise e.ValueError("`n_variables` should be > 1")
 
-        f1 = 1 - np.exp(-4 * x[0]) * np.sin(6 * np.pi * x[0])**6
+        f1 = 1 - np.exp(-4 * x[0]) * np.sin(6 * np.pi * x[0]) ** 6
 
-        g = 1 + 9 * (np.sum(x[1:]) / (len(x) - 1))**(1/4)
+        g = 1 + 9 * (np.sum(x[1:]) / (len(x) - 1)) ** (1 / 4)
 
         f2 = g * (1 - np.square(f1 / g))
-        
+
         return np.array([f1, f2])
-    
+
 
 class DTLZ1(MultiObjectiveBenchmark):
     """DTLZ1 class implements the DTLZ1 multi-objective benchmarking function.
@@ -367,7 +370,7 @@ class DTLZ1(MultiObjectiveBenchmark):
         :math:`\sum_{i=1}^{M} f_i = 0.5`,
         achieved when :math:`g(\mathbf{x}_M) = 0`,
         i.e., :math:`x_i = 0.5` for all :math:`x_i \in \mathbf{x}_M`.
-        
+
     """
 
     def __init__(
@@ -395,7 +398,14 @@ class DTLZ1(MultiObjectiveBenchmark):
         """
 
         super(DTLZ1, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
     @d.check_exact_dimension
@@ -420,24 +430,24 @@ class DTLZ1(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
-        g = 100 * (k + np.sum((xm[:] - 0.5)**2 - np.cos(20 * np.pi * (xm[:] - 0.5))))
+        g = 100 * (k + np.sum((xm[:] - 0.5) ** 2 - np.cos(20 * np.pi * (xm[:] - 0.5))))
 
         for i in range(M):
 
             total = 0.5 * (1 + g)
-            
+
             for j in range(M - 1 - i):
                 total *= x[j]
 
             if i > 0:
-                total *= (1 - x[M - 1 - i])
+                total *= 1 - x[M - 1 - i]
 
             f[i] = total
-        
+
         return f
-    
+
 
 class DTLZ2(MultiObjectiveBenchmark):
     """DTLZ2 class implements the DTLZ2 multi-objective benchmarking function.
@@ -457,7 +467,7 @@ class DTLZ2(MultiObjectiveBenchmark):
     Pareto-optimal front:
         :math:`\sum_{m=1}^{M} f_m^2 = 1.`,
         achieved when :math:`x_i = 0.5` for all :math:`x_i \in \mathbf{x}_M`.
-        
+
     """
 
     def __init__(
@@ -469,7 +479,7 @@ class DTLZ2(MultiObjectiveBenchmark):
         differentiable: Optional[bool] = True,
         multimodal: Optional[bool] = False,
         separable: Optional[bool] = True,
-        n_objectives: Optional[int] = 3
+        n_objectives: Optional[int] = 3,
     ):
         """Initialization method.
 
@@ -485,7 +495,14 @@ class DTLZ2(MultiObjectiveBenchmark):
         """
 
         super(DTLZ2, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
     @d.check_exact_dimension
@@ -510,27 +527,26 @@ class DTLZ2(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
-        g = np.sum((xm[:] - 0.5)**2)
+        g = np.sum((xm[:] - 0.5) ** 2)
 
         for i in range(M):
 
-            total = (1 + g)
-            
+            total = 1 + g
+
             for j in range(M - 1 - i):
-                total *= (np.cos(x[j] * np.pi/2))
+                total *= np.cos(x[j] * np.pi / 2)
 
             if i > 0:
-                total *= (np.sin(x[M - 1 - i] * np.pi/2))
+                total *= np.sin(x[M - 1 - i] * np.pi / 2)
 
             f[i] = total
-        
+
         return f
-    
+
 
 class DTLZ3(MultiObjectiveBenchmark):
-
     """DTLZ3 class implements the DTLZ3 multi-objective benchmarking function.
 
     .. math:: f_1 = (1 + g)\prod_{j=1}^{M-i}\cos\!\left(\tfrac{\pi}{2}x_j\right)
@@ -548,7 +564,7 @@ class DTLZ3(MultiObjectiveBenchmark):
     Pareto-optimal front:
         :math:`\sum_{m=1}^{M} f_m^2 = 1.`,
         achieved when :math:`x_i = 0.5` for all :math:`x_i \in \mathbf{x}_M`.
-        
+
     """
 
     def __init__(
@@ -560,7 +576,7 @@ class DTLZ3(MultiObjectiveBenchmark):
         differentiable: Optional[bool] = True,
         multimodal: Optional[bool] = True,
         separable: Optional[bool] = True,
-        n_objectives: Optional[int] = 3
+        n_objectives: Optional[int] = 3,
     ):
         """Initialization method.
 
@@ -576,7 +592,14 @@ class DTLZ3(MultiObjectiveBenchmark):
         """
 
         super(DTLZ3, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
     @d.check_exact_dimension
@@ -601,27 +624,26 @@ class DTLZ3(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
-        g = 100 * (k + np.sum((xm[:] - 0.5)**2 - np.cos(20 * np.pi * (xm[:] - 0.5))))
+        g = 100 * (k + np.sum((xm[:] - 0.5) ** 2 - np.cos(20 * np.pi * (xm[:] - 0.5))))
 
         for i in range(M):
 
-            total = (1 + g)
-            
+            total = 1 + g
+
             for j in range(M - 1 - i):
-                total *= (np.cos(x[j] * np.pi/2))
+                total *= np.cos(x[j] * np.pi / 2)
 
             if i > 0:
-                total *= (np.sin(x[M - 1 - i] * np.pi/2))
+                total *= np.sin(x[M - 1 - i] * np.pi / 2)
 
             f[i] = total
-        
+
         return f
-    
+
 
 class DTLZ4(MultiObjectiveBenchmark):
-
     """DTLZ4 class implements the DTLZ4 multi-objective benchmarking function.
 
     .. math:: f_1 = (1 + g)\prod_{j=1}^{M-i}\cos\!\left(\tfrac{\pi}{2}x_j^\alpha\right)
@@ -667,9 +689,16 @@ class DTLZ4(MultiObjectiveBenchmark):
         """
 
         super(DTLZ4, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
-    
+
         self.alpha = alpha
 
     @property
@@ -709,27 +738,26 @@ class DTLZ4(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
-        g = np.sum((xm[:] - 0.5)**2)
+        g = np.sum((xm[:] - 0.5) ** 2)
 
         for i in range(M):
 
-            total = (1 + g)
-            
+            total = 1 + g
+
             for j in range(M - 1 - i):
-                total *= (np.cos((x[j]**self.alpha) * np.pi/2))
+                total *= np.cos((x[j] ** self.alpha) * np.pi / 2)
 
             if i > 0:
-                total *= (np.sin((x[M - 1 - i]**self.alpha) * np.pi/2))
+                total *= np.sin((x[M - 1 - i] ** self.alpha) * np.pi / 2)
 
             f[i] = total
-        
+
         return f
-    
+
 
 class DTLZ5(MultiObjectiveBenchmark):
-    
     """DTLZ5 class implements the DTLZ5 multi-objective benchmarking function.
 
     .. math:: f_1 = (1 + g)\prod_{j=1}^{M-i}\cos\!\left(\tfrac{\pi}{2}\theta_j\right)
@@ -778,7 +806,14 @@ class DTLZ5(MultiObjectiveBenchmark):
         """
 
         super(DTLZ5, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
     @d.check_exact_dimension
@@ -803,34 +838,33 @@ class DTLZ5(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
-        g = np.sum((xm[:] - 0.5)**2)
+        g = np.sum((xm[:] - 0.5) ** 2)
 
         theta = np.zeros(M - 1)
 
-        theta[0] = x[0] * np.pi/2
+        theta[0] = x[0] * np.pi / 2
 
         for i in range(1, M - 1):
             theta[i] = (np.pi / (4 * (1 + g))) * (1 + 2 * g * x[i])
 
         for i in range(M):
 
-            total = (1 + g)
-            
+            total = 1 + g
+
             for j in range(M - 1 - i):
-                total *= (np.cos(theta[j]))
+                total *= np.cos(theta[j])
 
             if i > 0:
-                total *= (np.sin(theta[M - 1 - i]))
+                total *= np.sin(theta[M - 1 - i])
 
             f[i] = total
-        
+
         return f
-    
+
 
 class DTLZ6(MultiObjectiveBenchmark):
-    
     """DTLZ6 class implements the DTLZ6 multi-objective benchmarking function.
 
     .. math:: f_1 = (1 + g)\prod_{j=1}^{M-i}\cos\!\left(\tfrac{\pi}{2}\theta_j\right)
@@ -879,7 +913,14 @@ class DTLZ6(MultiObjectiveBenchmark):
         """
 
         super(DTLZ6, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
     @d.check_exact_dimension
@@ -904,38 +945,37 @@ class DTLZ6(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
-        g = np.sum(xm[:]**0.1)
+        g = np.sum(xm[:] ** 0.1)
 
         theta = np.zeros(M - 1)
 
-        theta[0] = x[0] * np.pi/2
+        theta[0] = x[0] * np.pi / 2
 
         for i in range(1, M - 1):
             theta[i] = (np.pi / (4 * (1 + g))) * (1 + 2 * g * x[i])
 
         for i in range(M):
 
-            total = (1 + g)
-            
+            total = 1 + g
+
             for j in range(M - 1 - i):
-                total *= (np.cos(theta[j]))
+                total *= np.cos(theta[j])
 
             if i > 0:
-                total *= (np.sin(theta[M - 1 - i]))
+                total *= np.sin(theta[M - 1 - i])
 
             f[i] = total
-        
+
         return f
 
 
 class DTLZ7(MultiObjectiveBenchmark):
-    
     """DTLZ7 class implements the DTLZ7 multi-objective benchmarking function.
 
     .. math:: f_i(x_i) = x_i,\quad i = 1,\ldots,M-1
-    
+
     .. math:: f_M = (1 + g)\,h(f_1,\ldots,f_{M-1},\,g)
 
     .. math:: g(\mathbf{x}_M) = 1 + \frac{9}{k}\sum_{x_i \in \mathbf{x}_M} x_i
@@ -976,7 +1016,14 @@ class DTLZ7(MultiObjectiveBenchmark):
         """
 
         super(DTLZ7, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
     @d.check_exact_dimension
@@ -1001,26 +1048,25 @@ class DTLZ7(MultiObjectiveBenchmark):
 
         k = n - M + 1
 
-        xm = x[n - k:]
+        xm = x[n - k :]
 
         g = 1 + (9 / k) * np.sum(xm[:])
 
         for i in range(M - 1):
             f[i] = x[i]
 
-        h = M - np.sum(f[:M - 1]/(1 + g) * (1 + np.sin(3 * np.pi * f[:M - 1])))
+        h = M - np.sum(f[: M - 1] / (1 + g) * (1 + np.sin(3 * np.pi * f[: M - 1])))
 
         f[M - 1] = (1 + g) * h
-        
+
         return f
 
 
 class DTLZ8(MultiObjectiveBenchmark):
-    
     """DTLZ8 class implements the DTLZ8 constrained multi-objective benchmarking function.
 
     .. math:: f_j(\mathbf{x}) = \frac{1}{\lfloor n/M \rfloor} \sum_{i=\lfloor (j-1)n/M \rfloor}^{\lfloor jn/M \rfloor} x_i, \quad j = 1,2,\ldots,M
-    
+
     Subject to:
 
     .. math:: g_j(\mathbf{x}) = f_M(\mathbf{x}) + 4f_j(\mathbf{x}) - 1 \geq 0, \quad j = 1,2,\ldots,M-1
@@ -1031,7 +1077,7 @@ class DTLZ8(MultiObjectiveBenchmark):
         The function is commonly evaluated using :math:`x_i \in [0, 1]`.
 
     Constraints:
-        The problem has :math:`M` inequality constraints that define a disconnected feasible Pareto-optimal front.    
+        The problem has :math:`M` inequality constraints that define a disconnected feasible Pareto-optimal front.
 
     Pareto-optimal front:
         Obtained when all constraints are satisfied. The resulting front is discontinuous and presents several disconnected regions.
@@ -1065,7 +1111,14 @@ class DTLZ8(MultiObjectiveBenchmark):
         """
 
         super(DTLZ8, self).__init__(
-            name, dims, continuous, convex, differentiable, multimodal, separable, n_objectives
+            name,
+            dims,
+            continuous,
+            convex,
+            differentiable,
+            multimodal,
+            separable,
+            n_objectives,
         )
 
         self.penalty = penalty
@@ -1083,7 +1136,7 @@ class DTLZ8(MultiObjectiveBenchmark):
         if penalty < 0:
             raise e.ValueError("`penalty` should be >= 0")
 
-        self._penalty = penalty    
+        self._penalty = penalty
 
     @d.check_exact_dimension
     def __call__(self, x: np.array) -> np.ndarray:
@@ -1102,7 +1155,7 @@ class DTLZ8(MultiObjectiveBenchmark):
 
         if n <= M:
             raise e.ValueError("Number of variables must satisfy n > M")
-        
+
         if M < 3:
             raise e.ValueError("Number of objectives must be at least 3")
 
@@ -1111,7 +1164,13 @@ class DTLZ8(MultiObjectiveBenchmark):
         constraints = np.zeros(M)
 
         for i in range(M):
-            f[i] = (1 / np.floor(n / M).astype(int)) * np.sum(x[np.floor(i * n / M).astype(int) : np.floor((i + 1) * n / M).astype(int)])
+            f[i] = (1 / np.floor(n / M).astype(int)) * np.sum(
+                x[
+                    np.floor(i * n / M)
+                    .astype(int) : np.floor((i + 1) * n / M)
+                    .astype(int)
+                ]
+            )
 
         for i in range(M - 1):
             constraints[i] = f[-1] + 4 * f[i] - 1
@@ -1122,20 +1181,19 @@ class DTLZ8(MultiObjectiveBenchmark):
             for k in range(j + 1, M - 1):
                 min_sum = min(min_sum, f[j] + f[k])
 
-        constraints[-1] = 2 * f[-1] + min_sum - 1        
+        constraints[-1] = 2 * f[-1] + min_sum - 1
 
         violation = 0
 
         for i in range(M):
             violation += max(0, -constraints[i]) ** 2
-        
+
         f += self.penalty * violation
 
         return f
-    
+
 
 class WFG1(WFGBenchmark):
-    
     """WFG1 class implements the WFG1 multi-objective benchmarking function.
 
     The WFG1 problem is composed of a sequence of transformation functions
@@ -1173,65 +1231,32 @@ class WFG1(WFGBenchmark):
     """
 
     def __init__(
-            self,
-            name: Optional[str] = "WFG1",
-            n_objectives: Optional[int] = 2,
-            k: Optional[int] = 4,
-            l: Optional[int] = 20,
-        ):
-            """Initialization method.
-    
-            Args:
-                name: Name of the function.
-                n_objectives: Number of objectives.
-                k: Number of position parameters.
-                l: Number of distance parameters.
-            """
-    
-            super(WFG1, self).__init__(
-                name=name,
-                continuous=True,
-                convex=True,
-                differentiable=False,
-                multimodal=False,
-                separable=True,
-                n_objectives=n_objectives,
-                k=k,
-                l=l,
-            )
+        self,
+        name: Optional[str] = "WFG1",
+        n_objectives: Optional[int] = 2,
+        k: Optional[int] = 4,
+        l: Optional[int] = 20,
+    ):
+        """Initialization method.
 
-    def __init__(
-            self,
-            name: Optional[str] = "WFG1",
-            n_objectives: Optional[int] = 2,
-            k: Optional[int] = 4,
-            l: Optional[int] = 20,
-        ):
-            """Initialization method.
-    
-            Args:
-                name: Name of the function.
-                continuous: Whether the function is continuous.
-                convex: Whether the function is convex.
-                differentiable: Whether the function is differentiable.
-                multimodal: Whether the function is multimodal.
-                separable: Whether the function is separable.
-                n_objectives: Number of objectives.
-                k: Number of position parameters.
-                l: Number of distance parameters.
-            """
-    
-            super(WFG1, self).__init__(
-                name=name, 
-                continuous=True, 
-                convex=True, 
-                differentiable=False, 
-                multimodal=False, 
-                separable=True, 
-                n_objectives=n_objectives, 
-                k=k, 
-                l=l
-            )    
+        Args:
+            name: Name of the function.
+            n_objectives: Number of objectives.
+            k: Number of position parameters.
+            l: Number of distance parameters.
+        """
+
+        super(WFG1, self).__init__(
+            name=name,
+            continuous=True,
+            convex=True,
+            differentiable=False,
+            multimodal=False,
+            separable=True,
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
+        )
 
     @d.check_exact_dimension
     def __call__(self, z: np.array) -> np.ndarray:
@@ -1254,10 +1279,10 @@ class WFG1(WFGBenchmark):
         y = self.normalize(z)
 
         t1 = np.copy(y)
-        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+        t1[self.k :] = t.s_linear(y[self.k :], 0.35)
 
         t2 = np.copy(t1)
-        t2[self.k:] = t.b_flat(t1[self.k:], 0.8, 0.75, 0.85)
+        t2[self.k :] = t.b_flat(t1[self.k :], 0.8, 0.75, 0.85)
 
         t3 = np.copy(t2)
         t3 = t.b_poly(t2, 0.02)
@@ -1266,13 +1291,13 @@ class WFG1(WFGBenchmark):
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = 2 * (np.arange(start, end) + 1)
-            
+
             t4[i - 1] = t.r_sum(t3[start:end], w1)
 
         w2 = 2 * (np.arange(self.k, n) + 1)
-        t4[M - 1] = t.r_sum(t3[self.k:n], w2)
+        t4[M - 1] = t.r_sum(t3[self.k : n], w2)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t4, A)
@@ -1284,10 +1309,9 @@ class WFG1(WFGBenchmark):
         h[-1] = s.mixed(x[:-1], 1, 5)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG2(WFGBenchmark):
-    
     """WFG2 class implements the WFG2 multi-objective benchmarking function.
 
     The WFG2 problem is constructed using a sequence of transformation
@@ -1370,7 +1394,7 @@ class WFG2(WFGBenchmark):
         y = self.normalize(z)
 
         t1 = np.copy(y)
-        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+        t1[self.k :] = t.s_linear(y[self.k :], 0.35)
 
         t2 = np.copy(t1)
         for i in range(self.k, self.k + self.l // 2):
@@ -1383,13 +1407,13 @@ class WFG2(WFGBenchmark):
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = np.ones(end - start)
-            
+
             t3[i - 1] = t.r_sum(t2[start:end], w1)
 
         w2 = np.ones((self.k + self.l // 2) - self.k)
-        t3[M - 1] = t.r_sum(t2[self.k:self.k + self.l // 2], w2)
+        t3[M - 1] = t.r_sum(t2[self.k : self.k + self.l // 2], w2)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t3, A)
@@ -1401,10 +1425,9 @@ class WFG2(WFGBenchmark):
         h[-1] = s.disc(x[:-1], 1, 1, 5)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG3(WFGBenchmark):
-    
     """WFG3 class implements the WFG3 multi-objective benchmarking function.
 
     The WFG3 problem uses the same transformation sequence as WFG2,
@@ -1459,7 +1482,7 @@ class WFG3(WFGBenchmark):
             convex=True,
             differentiable=False,
             multimodal=False,
-            separable=False, 
+            separable=False,
             n_objectives=n_objectives,
             k=k,
             l=l,
@@ -1486,7 +1509,7 @@ class WFG3(WFGBenchmark):
         y = self.normalize(z)
 
         t1 = np.copy(y)
-        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+        t1[self.k :] = t.s_linear(y[self.k :], 0.35)
 
         t2 = np.copy(t1)
         for i in range(self.k, self.k + self.l // 2):
@@ -1499,13 +1522,13 @@ class WFG3(WFGBenchmark):
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = np.ones(end - start)
-            
+
             t3[i - 1] = t.r_sum(t2[start:end], w1)
 
         w2 = np.ones((self.k + self.l // 2) - self.k)
-        t3[M - 1] = t.r_sum(t2[self.k:self.k + self.l // 2], w2)
+        t3[M - 1] = t.r_sum(t2[self.k : self.k + self.l // 2], w2)
 
         A = np.zeros(M - 1)
         A[0] = 1
@@ -1516,10 +1539,9 @@ class WFG3(WFGBenchmark):
             h[i - 1] = s.linear(x[:-1], i)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG4(WFGBenchmark):
-    
     """WFG4 class implements the WFG4 multi-objective benchmarking function.
 
     The WFG4 problem is constructed using a multimodal transformation
@@ -1572,7 +1594,7 @@ class WFG4(WFGBenchmark):
             convex=False,
             differentiable=True,
             multimodal=True,
-            separable=True, 
+            separable=True,
             n_objectives=n_objectives,
             k=k,
             l=l,
@@ -1604,12 +1626,12 @@ class WFG4(WFGBenchmark):
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = np.ones(end - start)
             t2[i - 1] = t.r_sum(t1[start:end], w1)
 
         w2 = np.ones(n - self.k)
-        t2[M - 1] = t.r_sum(t1[self.k:n], w2)
+        t2[M - 1] = t.r_sum(t1[self.k : n], w2)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t2, A)
@@ -1619,10 +1641,9 @@ class WFG4(WFGBenchmark):
             h[i - 1] = s.concave(x[:-1], i)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG5(WFGBenchmark):
-    
     """WFG5 class implements the WFG5 multi-objective benchmarking function.
 
     The WFG5 problem is constructed using a deceptive transformation
@@ -1670,14 +1691,14 @@ class WFG5(WFGBenchmark):
         """
 
         super(WFG5, self).__init__(
-            name=name, 
+            name=name,
             continuous=True,
             convex=False,
             differentiable=False,
             multimodal=False,
             separable=True,
-            n_objectives=n_objectives, 
-            k=k, 
+            n_objectives=n_objectives,
+            k=k,
             l=l,
         )
 
@@ -1707,12 +1728,12 @@ class WFG5(WFGBenchmark):
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = np.ones(end - start)
             t2[i - 1] = t.r_sum(t1[start:end], w1)
 
         w2 = np.ones(n - self.k)
-        t2[M - 1] = t.r_sum(t1[self.k:n], w2)
+        t2[M - 1] = t.r_sum(t1[self.k : n], w2)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t2, A)
@@ -1722,10 +1743,9 @@ class WFG5(WFGBenchmark):
             h[i - 1] = s.concave(x[:-1], i)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG6(WFGBenchmark):
-    
     """WFG6 class implements the WFG6 multi-objective benchmarking function.
 
     The WFG6 problem is constructed using a linear transformation
@@ -1778,7 +1798,7 @@ class WFG6(WFGBenchmark):
             convex=False,
             differentiable=True,
             multimodal=False,
-            separable=False, 
+            separable=False,
             n_objectives=n_objectives,
             k=k,
             l=l,
@@ -1805,16 +1825,16 @@ class WFG6(WFGBenchmark):
         y = self.normalize(z)
 
         t1 = np.copy(y)
-        t1[self.k:] = t.s_linear(y[self.k:], 0.35)
+        t1[self.k :] = t.s_linear(y[self.k :], 0.35)
 
         t2 = np.zeros(M)
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
 
-            t2[i - 1] = t.r_nonsep(t1[start:end], self.k // (M-1))
+            t2[i - 1] = t.r_nonsep(t1[start:end], self.k // (M - 1))
 
-        t2[M - 1] = t.r_nonsep(t1[self.k:n], self.l)
+        t2[M - 1] = t.r_nonsep(t1[self.k : n], self.l)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t2, A)
@@ -1824,10 +1844,9 @@ class WFG6(WFGBenchmark):
             h[i - 1] = s.concave(x[:-1], i)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG7(WFGBenchmark):
-    
     """WFG7 class implements the WFG7 multi-objective benchmarking function.
 
     The WFG7 problem introduces parameter dependency through a parameter-based
@@ -1877,14 +1896,14 @@ class WFG7(WFGBenchmark):
         """
 
         super(WFG7, self).__init__(
-            name=name, 
+            name=name,
             continuous=True,
             convex=False,
             differentiable=True,
-            multimodal= False,
+            multimodal=False,
             separable=True,
-            n_objectives=n_objectives, 
-            k=k, 
+            n_objectives=n_objectives,
+            k=k,
             l=l,
         )
 
@@ -1911,21 +1930,21 @@ class WFG7(WFGBenchmark):
         t1 = np.copy(y)
         for i in range(self.k):
             w1 = np.ones(n - (i + 1))
-            t1[i] = t.b_param(y[i], t.r_sum(y[i+1:n], w1), 0.98/49.98, 0.02, 50)
+            t1[i] = t.b_param(y[i], t.r_sum(y[i + 1 : n], w1), 0.98 / 49.98, 0.02, 50)
 
         t2 = np.copy(t1)
-        t2[self.k:] = t.s_linear(t1[self.k:], 0.35)
+        t2[self.k :] = t.s_linear(t1[self.k :], 0.35)
 
         t3 = np.zeros(M)
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = np.ones(end - start)
             t3[i - 1] = t.r_sum(t2[start:end], w1)
 
         w2 = np.ones(n - self.k)
-        t3[M - 1] = t.r_sum(t2[self.k:n], w2)
+        t3[M - 1] = t.r_sum(t2[self.k : n], w2)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t3, A)
@@ -1935,10 +1954,9 @@ class WFG7(WFGBenchmark):
             h[i - 1] = s.concave(x[:-1], i)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG8(WFGBenchmark):
-    
     """WFG8 class implements the WFG8 multi-objective benchmarking function.
 
     The WFG8 problem introduces parameter dependency into the distance
@@ -1993,7 +2011,7 @@ class WFG8(WFGBenchmark):
             convex=False,
             differentiable=True,
             multimodal=True,
-            separable=True, 
+            separable=True,
             n_objectives=n_objectives,
             k=k,
             l=l,
@@ -2022,21 +2040,21 @@ class WFG8(WFGBenchmark):
         t1 = np.copy(y)
         for i in range(self.k, n):
             w1 = np.ones(i)
-            t1[i] = t.b_param(y[i], t.r_sum(y[:i], w1), 0.98/49.98, 0.02, 50)
+            t1[i] = t.b_param(y[i], t.r_sum(y[:i], w1), 0.98 / 49.98, 0.02, 50)
 
         t2 = np.copy(t1)
-        t2[self.k:] = t.s_linear(t1[self.k:], 0.35)
+        t2[self.k :] = t.s_linear(t1[self.k :], 0.35)
 
         t3 = np.zeros(M)
         for i in range(1, M):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
-        
+
             w1 = np.ones(end - start)
             t3[i - 1] = t.r_sum(t2[start:end], w1)
 
         w2 = np.ones(n - self.k)
-        t3[M - 1] = t.r_sum(t2[self.k:n], w2)
+        t3[M - 1] = t.r_sum(t2[self.k : n], w2)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t3, A)
@@ -2046,10 +2064,9 @@ class WFG8(WFGBenchmark):
             h[i - 1] = s.concave(x[:-1], i)
 
         return self.calculate_f(h, x[M - 1])
-    
+
 
 class WFG9(WFGBenchmark):
-    
     """WFG9 class implements the WFG9 multi-objective benchmarking function.
 
     The WFG9 problem combines parameter dependency, deceptive and
@@ -2085,7 +2102,7 @@ class WFG9(WFGBenchmark):
 
     def __init__(
         self,
-        name: Optional[str] = "WFG9",        
+        name: Optional[str] = "WFG9",
         n_objectives: Optional[int] = 2,
         k: Optional[int] = 4,
         l: Optional[int] = 20,
@@ -2100,15 +2117,15 @@ class WFG9(WFGBenchmark):
         """
 
         super(WFG9, self).__init__(
-            name=name, 
+            name=name,
             continuous=True,
             convex=False,
             differentiable=False,
             multimodal=True,
-            separable=True, 
-            n_objectives=n_objectives, 
-            k=k, 
-            l=l
+            separable=True,
+            n_objectives=n_objectives,
+            k=k,
+            l=l,
         )
 
     @d.check_exact_dimension
@@ -2134,7 +2151,7 @@ class WFG9(WFGBenchmark):
         t1 = np.copy(y)
         for i in range(n - 1):
             w1 = np.ones(n - (i + 1))
-            t1[i] = t.b_param(y[i], t.r_sum(y[i+1:], w1), 0.98/49.98, 0.02, 50)
+            t1[i] = t.b_param(y[i], t.r_sum(y[i + 1 :], w1), 0.98 / 49.98, 0.02, 50)
 
         t2 = np.copy(t1)
         for i in range(self.k):
@@ -2147,9 +2164,9 @@ class WFG9(WFGBenchmark):
             start = (i - 1) * self.k // (M - 1)
             end = i * self.k // (M - 1)
 
-            t3[i - 1] = t.r_nonsep(t2[start:end], self.k // (M-1))
+            t3[i - 1] = t.r_nonsep(t2[start:end], self.k // (M - 1))
 
-        t3[M - 1] = t.r_nonsep(t2[self.k:n], self.l)
+        t3[M - 1] = t.r_nonsep(t2[self.k : n], self.l)
 
         A = np.ones(M - 1)
         x = self.calculate_x(t3, A)

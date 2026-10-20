@@ -158,9 +158,7 @@ class Benchmark:
 
 
 class MultiObjectiveBenchmark(Benchmark):
-    """A MultiObjectiveBenchmark class for multi-objective benchmarks that require an explicit number of objectives.
-
-    """
+    """A MultiObjectiveBenchmark class for multi-objective benchmarks that require an explicit number of objectives."""
 
     def __init__(
         self,
@@ -184,7 +182,7 @@ class MultiObjectiveBenchmark(Benchmark):
             multimodal: Whether the function is multimodal.
             separable: Whether the function is separable.
             n_objectives: Number of objectives.
-            
+
         """
 
         super(MultiObjectiveBenchmark, self).__init__(
@@ -207,12 +205,10 @@ class MultiObjectiveBenchmark(Benchmark):
             raise e.ValueError("`n_objectives` should be > 1")
 
         self._n_objectives = n_objectives
-    
+
 
 class WFGBenchmark(MultiObjectiveBenchmark):
-    """A WFGBenchmark class for WFG multi-objective benchmarks
-
-    """
+    """A WFGBenchmark class for WFG multi-objective benchmarks"""
 
     def __init__(
         self,
@@ -271,25 +267,25 @@ class WFGBenchmark(MultiObjectiveBenchmark):
         self._k = k
 
     @property
-    def l(self) -> int:
+    def num_distance_params(self) -> int:
         """Number of distance parameters."""
 
         return self._l
 
-    @l.setter
-    def l(self, l: int) -> None:
-        if not isinstance(l, int):
-            raise e.TypeError("`l` should be an integer")
-        if l <= 1:
-            raise e.ValueError("`l` should be > 1")
+    @num_distance_params.setter
+    def num_distance_params(self, value: int) -> None:
+        if not isinstance(value, int):
+            raise e.TypeError("`num_distance_params` should be an integer")
+        if value <= 1:
+            raise e.ValueError("`num_distance_params` should be > 1")
 
-        self._l = l
+        self._l = value
 
     def normalize(self, z: np.array):
         aux = np.arange(len(z))
 
         return z / (2 * (aux + 1))
-    
+
     def calculate_x(self, t, A):
         M = len(t)
 
@@ -301,12 +297,12 @@ class WFGBenchmark(MultiObjectiveBenchmark):
         x[M - 1] = t[M - 1]
 
         return x
-    
+
     def calculate_f(self, h, x_M):
         M = len(h)
 
         f = np.zeros(M)
-        
+
         D = 1
         S = [2 * (i + 1) for i in range(M)]
 
@@ -314,11 +310,11 @@ class WFGBenchmark(MultiObjectiveBenchmark):
             f[i] = D * x_M + S[i] * h[i]
 
         return f
-    
+
     @property
     def lower_bound(self):
         return np.zeros(self.k + self.l)
-    
+
     @property
     def upper_bound(self):
         return 2 * np.arange(1, self.k + self.l + 1)
