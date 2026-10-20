@@ -2316,11 +2316,7 @@ class Salomon(Benchmark):
         """
 
         # Calculating the Salomon's function
-        f = (
-            1
-            - np.cos(2 * np.pi * np.sqrt(np.sum(x**2)))
-            + 0.1 * np.sqrt(np.sum(x**2))
-        )
+        f = 1 - np.cos(2 * np.pi * np.sqrt(np.sum(x**2))) + 0.1 * np.sqrt(np.sum(x**2))
 
         return f
 
